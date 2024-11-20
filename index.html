@@ -72,7 +72,7 @@
                 if (item.name.endsWith(".pdf")) {
                     link.addEventListener("click", function (event) {
                         event.preventDefault();
-                        loadPDF(fileURL);
+                        loadPDF(fileURL); // Load the PDF in the viewer
                     });
                 } else {
                     // Open other files directly
