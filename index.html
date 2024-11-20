@@ -53,8 +53,8 @@
             fileList.innerHTML = "";
 
             data.forEach(item => {
-                // Skip index.html
-                if (item.name === "index.html") {
+                // Skip index.html, build, and web directories
+                if (item.name === "index.html" || item.name === "build" || item.name === "web") {
                     return;
                 }
 
