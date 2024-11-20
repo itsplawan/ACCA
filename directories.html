@@ -22,6 +22,12 @@
       <div id="pdf-viewer" style="width:100%; height:600px;">
         <canvas id="pdf-canvas"></canvas> <!-- Canvas for rendering PDF -->
       </div>
+      <!-- Navigation Controls -->
+      <div id="navigation">
+        <button id="prev-page" onclick="changePage(-1)">Previous</button>
+        <button id="next-page" onclick="changePage(1)">Next</button>
+        <span id="page-num">Page: 1</span>
+      </div>
     </section>
 
     <footer>
@@ -32,6 +38,9 @@
       const repoOwner = "itsplawan";
       const repoName = "ACCA";
       const pdfFolder = "pdfs"; // Folder where PDFs are stored
+      let currentPdf = null; // To keep track of the current PDF
+      let currentPage = 1; // Current page number
+      let totalPages = 0; // Total number of pages
 
       async function fetchRepoContents() {
         const apiUrl = `https://api.github.com/repos/${repoOwner}/${repoName}/contents/${pdfFolder}`;
@@ -58,29 +67,50 @@
         const canvas = document.getElementById("pdf-canvas");
         const context = canvas.getContext("2d");
 
+        // Fetch the PDF document
         pdfjsLib.getDocument(url).promise.then(pdf => {
-          console.log('PDF loaded');
-          
-          // Get the first page
-          pdf.getPage(1).then(page => {
-            console.log('Page loaded');
-            
-            const scale = 1.5;
-            const viewport = page.getViewport({ scale: scale });
+          currentPdf = pdf;
+          totalPages = pdf.numPages;
+          currentPage = 1; // Reset to first page
 
-            canvas.height = viewport.height;
-            canvas.width = viewport.width;
-
-            // Render the page
-            const renderContext = {
-              canvasContext: context,
-              viewport: viewport
-            };
-            page.render(renderContext);
-          });
+          renderPage(currentPage);
         }).catch(error => {
           console.error('Error loading PDF:', error);
         });
+      }
+
+      // Render the page based on currentPage
+      function renderPage(pageNum) {
+        const canvas = document.getElementById("pdf-canvas");
+        const context = canvas.getContext("2d");
+
+        currentPdf.getPage(pageNum).then(page => {
+          const scale = 1.5;
+          const viewport = page.getViewport({ scale: scale });
+
+          // Set canvas dimensions based on page size
+          canvas.height = viewport.height;
+          canvas.width = viewport.width;
+
+          // Render the page
+          const renderContext = {
+            canvasContext: context,
+            viewport: viewport
+          };
+          page.render(renderContext);
+
+          // Update the page number text
+          document.getElementById("page-num").textContent = `Page: ${pageNum} of ${totalPages}`;
+        });
+      }
+
+      // Change the page (next or previous)
+      function changePage(direction) {
+        const newPage = currentPage + direction;
+        if (newPage >= 1 && newPage <= totalPages) {
+          currentPage = newPage;
+          renderPage(currentPage);
+        }
       }
 
       fetchRepoContents();
