@@ -4,114 +4,63 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Home | GitHub Pages PDF Viewer</title>
-    <meta name="description" content="Automatically display PDFs and directories from GitHub repo">
-    <meta property="og:title" content="Home" />
-    <meta property="og:locale" content="en_US" />
-    <meta property="og:description" content="Automatically display PDFs and directories from GitHub repo" />
-    <meta property="og:url" content="https://plawanghimire.com.np/" />
-    <meta property="og:site_name" content="GitHub Pages PDF Viewer" />
-    <meta property="og:type" content="website" />
-    <meta name="twitter:card" content="summary" />
-    <meta property="twitter:title" content="Home" />
-    <script type="application/ld+json">
-        {"@context":"https://schema.org","@type":"WebSite","description":"Automatically display PDFs and directories from GitHub repo","headline":"Home","name":"GitHub Pages PDF Viewer","url":"https://plawanghimire.com.np/"}
-    </script>
-    <link rel="stylesheet" href="/assets/css/style.css?v=7d37237e9bece72c342c724437340362acec2824">
+    <title>GitHub Pages PDF Viewer</title>
 </head>
 <body>
-    <div class="wrapper">
-        <header>
-            <h1><a href="https://plawanghimire.com.np/">GitHub Pages PDF Viewer</a></h1>
-            <p>Automatically display PDFs and directories from GitHub repo</p>
-            <p class="view"><a href="https://github.com/itsplawan/ACCA">View the Project on GitHub <small>itsplawan/ACCA</small></a></p>
-        </header>
-
-        <section>
-            <h1 id="welcome-to-the-github-pdf-viewer">Welcome to the GitHub PDF Viewer</h1>
-            <p>This site allows you to view PDF files stored in a GitHub repository directly in the browser.</p>
-            <p>Click on any PDF file to view it below.</p>
-
-            <!-- File list container -->
-            <ul id="file-list">Loading...</ul>
-
-            <!-- PDF viewer container -->
-            <div id="pdf-container" style="display:none;">
-                <iframe id="pdf-viewer" src="" width="100%" height="600px" style="border: none;"></iframe>
-            </div>
-        </section>
-
-        <footer>
-            <p>This project is maintained by <a href="https://github.com/itsplawan">itsplawan</a></p>
-            <p><small>Hosted on GitHub Pages &mdash; Theme by <a href="https://github.com/orderedlist">orderedlist</a></small></p>
-        </footer>
-    </div>
+    <h1>GitHub Pages PDF Viewer</h1>
+    <ul id="file-list">Loading...</ul>
 
     <script>
-        const repoOwner = "itsplawan";  // Replace with your GitHub username
-        const repoName = "ACCA";        // Replace with your repository name
-        const pdfFolder = "pdfs";       // Folder where PDFs are located (change if your PDFs are in a different folder)
-        const baseURL = `https://raw.githubusercontent.com/itsplawan/ACCA/main/${pdfFolder}/`;  // Folder path for raw PDFs
+        const repoOwner = "itsplawan";  // Your GitHub username
+        const repoName = "ACCA";        // Your GitHub repository name
+        const pdfFolder = "pdfs";       // Folder where PDFs are located (e.g., 'pdfs')
 
-        // Function to fetch PDF files from the repository's pdfs/ folder using GitHub API
+        // API URL for fetching PDFs from the specified folder in the GitHub repo
+        const apiUrl = `https://api.github.com/repos/${repoOwner}/${repoName}/contents/${pdfFolder}/`;
+
         async function fetchRepoContents() {
-            const apiUrl = `https://api.github.com/repos/${repoOwner}/${repoName}/contents/${pdfFolder}/`;  // API endpoint for the pdfs folder
-            const response = await fetch(apiUrl);
+            try {
+                const response = await fetch(apiUrl);
+                const data = await response.json();
 
-            // If the request fails, log an error
-            if (!response.ok) {
-                console.error("Error fetching repository contents:", response.status, response.statusText);
-                return;
-            }
-
-            const data = await response.json();
-            const fileList = document.getElementById("file-list");
-            fileList.innerHTML = "";  // Clear the loading text
-
-            // Loop through the items and display them
-            data.forEach(item => {
-                // Skip the index.html, build, and web directories
-                if (item.name === "index.html" || item.name === "build" || item.name === "web") {
+                // If the request is not successful, show an error
+                if (!response.ok) {
+                    console.error("Error fetching repository contents:", response.status, response.statusText);
                     return;
                 }
 
-                const listItem = document.createElement("li");
-                const link = document.createElement("a");
+                console.log("GitHub API Response:", data);  // Log the raw data to see the structure
 
-                const fileURL = `${baseURL}${item.name}`;
+                const fileList = document.getElementById("file-list");
+                fileList.innerHTML = "";  // Clear the "Loading..." text
 
-                link.href = fileURL;
-                link.textContent = item.name;
-
-                // Open PDF files in the viewer
-                if (item.name.endsWith(".pdf")) {
-                    link.addEventListener("click", function (event) {
-                        event.preventDefault();
-                        loadPDF(fileURL); // Load the PDF into the viewer
-                    });
-                } else {
-                    link.target = "_self";  // For other files, open in the same window
+                // Check if there are items in the response
+                if (data.length === 0) {
+                    fileList.innerHTML = "<li>No PDFs found.</li>";
+                    return;
                 }
 
-                listItem.appendChild(link);
-                fileList.appendChild(listItem);
-            });
+                // Loop through the data to display only PDF files
+                data.forEach(item => {
+                    if (item.type === "file" && item.name.endsWith(".pdf")) {
+                        const listItem = document.createElement("li");
+                        const link = document.createElement("a");
+
+                        link.href = item.html_url;  // Link to the file on GitHub
+                        link.textContent = item.name;  // File name
+
+                        link.target = "_blank";  // Open in a new tab
+
+                        listItem.appendChild(link);
+                        fileList.appendChild(listItem);
+                    }
+                });
+            } catch (error) {
+                console.error("Error fetching repo contents:", error);
+            }
         }
 
-        // Function to load the PDF in the viewer
-        function loadPDF(url) {
-            // PDF.js viewer requires the full path to the PDF as the 'file' parameter
-            const viewerUrl = `https://mozilla.github.io/pdf.js/web/viewer.html?file=${encodeURIComponent(url)}`;
-            const pdfContainer = document.getElementById("pdf-container");
-
-            pdfContainer.style.display = "block";  // Show the PDF viewer
-            document.getElementById("pdf-viewer").src = viewerUrl;
-        }
-
-        // Call the function to fetch repository contents
-        fetchRepoContents();
+        fetchRepoContents();  // Call the function to fetch the contents
     </script>
-
-    <script src="/assets/js/scale.fix.js"></script>
 </body>
 </html>
