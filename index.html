@@ -34,7 +34,7 @@
 </head>
 <body>
     <h1>GitHub Pages PDF Viewer</h1>
-    <p>Click on a PDF file to view it below:</p>
+    <p>Click on a file to view it below:</p>
     <ul id="file-list">Loading...</ul>
     <div id="pdf-container">
         <iframe id="pdf-viewer" src="" width="100%" height="100%" style="border: none;"></iframe>
@@ -43,7 +43,7 @@
     <script>
         const repoOwner = "itsplawan"; // Replace with your GitHub username
         const repoName = "ACCA"; // Replace with your repository name
-        const baseURL = `https://${repoOwner}.github.io/${repoName}/`; // GitHub Pages base URL
+        const baseURL = "https://plawanghimire.com.np/"; // Replace with your custom domain
 
         async function fetchRepoContents() {
             const apiUrl = `https://api.github.com/repos/${repoOwner}/${repoName}/contents/`;
@@ -58,23 +58,28 @@
                     return;
                 }
 
+                const listItem = document.createElement("li");
+                const link = document.createElement("a");
+
+                // Construct URL for the file within your custom domain
+                const fileURL = `${baseURL}${item.path}`;
+
+                link.href = fileURL;
+                link.textContent = item.name;
+
+                // Open PDF files in the viewer
                 if (item.name.endsWith(".pdf")) {
-                    const listItem = document.createElement("li");
-                    const link = document.createElement("a");
-
-                    // Construct GitHub Pages URL for each file
-                    const fileURL = `${baseURL}${item.name}`;
-
-                    link.href = "#";
-                    link.textContent = item.name;
                     link.addEventListener("click", function (event) {
                         event.preventDefault();
                         loadPDF(fileURL);
                     });
-
-                    listItem.appendChild(link);
-                    fileList.appendChild(listItem);
+                } else {
+                    // Open other files directly
+                    link.target = "_self";
                 }
+
+                listItem.appendChild(link);
+                fileList.appendChild(listItem);
             });
         }
 
