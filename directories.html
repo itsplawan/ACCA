@@ -1,122 +1,75 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en-US">
   <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GitHub Pages PDF Viewer</title>
-    <link rel="stylesheet" href="/assets/css/style.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.15.349/pdf.min.js"></script> <!-- PDF.js -->
-    <!-- Link to the external JS file -->
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>Home | GitHub Pages PDF Viewer</title>
+    <meta name="generator" content="Jekyll v3.10.0" />
+    <meta property="og:title" content="Home" />
+    <meta property="og:locale" content="en_US" />
+    <meta name="description" content="Automatically display PDFs and directories from GitHub repo" />
+    <meta property="og:description" content="Automatically display PDFs and directories from GitHub repo" />
+    <link rel="canonical" href="https://plawanghimire.com.np/" />
+    <meta property="og:url" content="http://plawanghimire.com.np/" />
+    <meta property="og:site_name" content="GitHub Pages PDF Viewer" />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary" />
+    <meta property="twitter:title" content="Home" />
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "description": "Automatically display PDFs and directories from GitHub repo",
+        "headline": "Home",
+        "name": "GitHub Pages PDF Viewer",
+        "url": "http://plawanghimire.com.np/"
+      }
+    </script>
+    
+    <!-- Link to CSS stylesheet -->
+    <link rel="stylesheet" href="/assets/css/style.css?v=7d37237e9bece72c342c724437340362acec2824">
+    
+    <!-- Include PDF.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.15.349/pdf.min.js"></script>
+    
+    <!-- Custom JS for fetching PDF files and rendering them -->
     <script src="/assets/js/script.js"></script>
 
   </head>
+  
   <body>
-    <header>
-      <h1>GitHub Pages PDF Viewer</h1>
-      <p>Automatically display PDFs and directories from GitHub repo</p>
-      <p><a href="https://github.com/itsplawan/ACCA">View Project on GitHub</a></p>
-    </header>
-
-    <section>
-      <h2>PDFs Available:</h2>
-      <ul id="file-list">Loading PDFs...</ul>
+    <div class="wrapper">
+      <header>
+        <h1><a href="https://plawanghimire.com.np/">GitHub Pages PDF Viewer</a></h1>
+        <p>Automatically display PDFs and directories from GitHub repo</p>
+        <p class="view"><a href="https://github.com/itsplawan/ACCA">View the Project on GitHub <small>itsplawan/ACCA</small></a></p>
+      </header>
       
-      <h2>PDF Viewer:</h2>
-      <div id="pdf-viewer" style="width:100%; height:600px;">
-        <canvas id="pdf-canvas"></canvas> <!-- Canvas for rendering PDF -->
-      </div>
-      <!-- Navigation Controls -->
-      <div id="navigation">
-        <button id="prev-page" onclick="changePage(-1)">Previous</button>
-        <button id="next-page" onclick="changePage(1)">Next</button>
-        <span id="page-num">Page: 1</span>
-      </div>
-    </section>
+      <section>
+        <h1 id="welcome-to-the-github-pdf-viewer">Welcome to the GitHub PDF Viewer</h1>
+        <p>This site allows you to view PDF files stored in a GitHub repository directly in the browser.</p>
+        <p>Click on any PDF file to view it below.</p>
 
-    <footer>
-      <p>This project is maintained by <a href="https://github.com/itsplawan">itsplawan</a></p>
-    </footer>
+        <ul id="file-list">
+          <!-- PDF files will be listed here -->
+        </ul>
+        
+        <div>
+          <canvas id="pdf-canvas"></canvas>
+          <p id="page-num">Page: 1</p>
+          <button onclick="changePage(-1)">Previous</button>
+          <button onclick="changePage(1)">Next</button>
+        </div>
+      </section>
 
-    <script>
-      const repoOwner = "itsplawan";
-      const repoName = "ACCA";
-      const pdfFolder = "pdfs"; // Folder where PDFs are stored
-      let currentPdf = null; // To keep track of the current PDF
-      let currentPage = 1; // Current page number
-      let totalPages = 0; // Total number of pages
-
-      async function fetchRepoContents() {
-        const apiUrl = `https://api.github.com/repos/${repoOwner}/${repoName}/contents/${pdfFolder}`;
-        const response = await fetch(apiUrl);
-        const data = await response.json();
-        const fileList = document.getElementById("file-list");
-
-        fileList.innerHTML = "";
-        data.forEach(item => {
-          if (item.type === "file" && item.name.endsWith(".pdf")) {
-            const listItem = document.createElement("li");
-            const link = document.createElement("a");
-            link.href = "#";
-            link.textContent = item.name;
-            link.onclick = () => openPdf(item.download_url);
-            listItem.appendChild(link);
-            fileList.appendChild(listItem);
-          }
-        });
-      }
-
-      // Function to open and render PDF in PDF.js
-      function openPdf(url) {
-        const canvas = document.getElementById("pdf-canvas");
-        const context = canvas.getContext("2d");
-
-        // Fetch the PDF document
-        pdfjsLib.getDocument(url).promise.then(pdf => {
-          currentPdf = pdf;
-          totalPages = pdf.numPages;
-          currentPage = 1; // Reset to first page
-
-          renderPage(currentPage);
-        }).catch(error => {
-          console.error('Error loading PDF:', error);
-        });
-      }
-
-      // Render the page based on currentPage
-      function renderPage(pageNum) {
-        const canvas = document.getElementById("pdf-canvas");
-        const context = canvas.getContext("2d");
-
-        currentPdf.getPage(pageNum).then(page => {
-          const scale = 1.5;
-          const viewport = page.getViewport({ scale: scale });
-
-          // Set canvas dimensions based on page size
-          canvas.height = viewport.height;
-          canvas.width = viewport.width;
-
-          // Render the page
-          const renderContext = {
-            canvasContext: context,
-            viewport: viewport
-          };
-          page.render(renderContext);
-
-          // Update the page number text
-          document.getElementById("page-num").textContent = `Page: ${pageNum} of ${totalPages}`;
-        });
-      }
-
-      // Change the page (next or previous)
-      function changePage(direction) {
-        const newPage = currentPage + direction;
-        if (newPage >= 1 && newPage <= totalPages) {
-          currentPage = newPage;
-          renderPage(currentPage);
-        }
-      }
-
-      fetchRepoContents();
-    </script>
+      <footer>
+        <p>This project is maintained by <a href="https://github.com/itsplawan">itsplawan</a></p>
+        <p><small>Hosted on GitHub Pages &mdash; Theme by <a href="https://github.com/orderedlist">orderedlist</a></small></p>
+      </footer>
+    </div>
+    
+    <script src="/assets/js/scale.fix.js"></script>
   </body>
 </html>
