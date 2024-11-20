@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GitHub Directory Viewer</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            padding: 20px;
+        }
+        ul {
+            list-style-type: none;
+        }
+        li {
+            margin: 5px 0;
+        }
+        a {
+            text-decoration: none;
+            color: #007bff;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <h1>GitHub Pages for iPad</h1>
+    <ul id="file-list">Loading...</ul>
+
+    <script>
+        const repoOwner = "itsplawan";
+        const repoName = "ACCA";
+
+        async function fetchRepoContents() {
+            const apiUrl = `https://api.github.com/repos/${repoOwner}/${repoName}/contents/`;
+            const response = await fetch(apiUrl);
+            const data = await response.json();
+            const fileList = document.getElementById("file-list");
+            fileList.innerHTML = "";
+
+            data.forEach(item => {
+                const listItem = document.createElement("li");
+                const link = document.createElement("a");
+
+                link.href = item.html_url;
+                link.textContent = item.name;
+
+                if (item.name.endsWith(".pdf")) {
+                    link.target = "_blank";
+                }
+
+                listItem.appendChild(link);
+                fileList.appendChild(listItem);
+            });
+        }
+
+        fetchRepoContents();
+    </script>
+</body>
+</html>
