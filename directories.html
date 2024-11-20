@@ -13,15 +13,25 @@ title: Repository Files
 <script>
   const repoOwner = "itsplawan";  // Replace with your GitHub username
   const repoName = "ACCA";        // Replace with your repository name
-  const baseURL = "https://raw.githubusercontent.com/itsplawan/ACCA/main/pdfs/";  // Replace with the correct folder URL for PDFs
+  const pdfFolder = "pdfs";       // Folder where PDFs are located (change if your PDFs are in a different folder)
+  const baseURL = `https://raw.githubusercontent.com/itsplawan/ACCA/main/${pdfFolder}/`;  // Folder path for raw PDFs
 
+  // Function to fetch PDF files from the repository's pdfs/ folder using GitHub API
   async function fetchRepoContents() {
-      const apiUrl = `https://api.github.com/repos/${repoOwner}/${repoName}/contents/`;
+      const apiUrl = `https://api.github.com/repos/${repoOwner}/${repoName}/contents/${pdfFolder}/`;  // API endpoint for the pdfs folder
       const response = await fetch(apiUrl);
+      
+      // If the request fails, log an error
+      if (!response.ok) {
+          console.error("Error fetching repository contents:", response.status, response.statusText);
+          return;
+      }
+      
       const data = await response.json();
       const fileList = document.getElementById("file-list");
-      fileList.innerHTML = "";
+      fileList.innerHTML = "";  // Clear the loading text
 
+      // Loop through the items and display them
       data.forEach(item => {
           // Skip the index.html, build, and web directories
           if (item.name === "index.html" || item.name === "build" || item.name === "web") {
@@ -31,7 +41,7 @@ title: Repository Files
           const listItem = document.createElement("li");
           const link = document.createElement("a");
 
-          const fileURL = `${baseURL}${item.path}`;
+          const fileURL = `${baseURL}${item.name}`;
 
           link.href = fileURL;
           link.textContent = item.name;
@@ -51,6 +61,7 @@ title: Repository Files
       });
   }
 
+  // Function to load the PDF in the viewer
   function loadPDF(url) {
       // PDF.js viewer requires the full path to the PDF as the 'file' parameter
       const viewerUrl = `https://mozilla.github.io/pdf.js/web/viewer.html?file=${encodeURIComponent(url)}`;
@@ -60,5 +71,6 @@ title: Repository Files
       document.getElementById("pdf-viewer").src = viewerUrl;
   }
 
+  // Call the function to fetch repository contents
   fetchRepoContents();
 </script>
