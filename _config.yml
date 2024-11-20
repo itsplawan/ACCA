@@ -1,3 +1,9 @@
-title: "GitHub Pages PDF Viewer"
-description: "Automatically display PDFs and directories from GitHub repo"
-theme: jekyll-theme-minimal
+title: GitHub Pages PDF Viewer
+description: A simple GitHub Pages site to view PDFs directly in your browser.
+url: "https://plawanghimire.com.np"
+baseurl: "" # Leave empty if hosted at the root
+
+theme: jekyll-theme-minimal # Or choose any theme you like
+
+exclude:
+  - "index.html" # Exclude index.html from being processed as a markdown file
