@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GitHub Directory Viewer</title>
+    <title>GitHub PDF Viewer</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -12,6 +12,7 @@
         }
         ul {
             list-style-type: none;
+            padding: 0;
         }
         li {
             margin: 5px 0;
@@ -23,15 +24,26 @@
         a:hover {
             text-decoration: underline;
         }
+        #pdf-container {
+            margin-top: 20px;
+            width: 100%;
+            height: 600px;
+            border: 1px solid #ccc;
+        }
     </style>
 </head>
 <body>
-    <h1>GitHub Pages for iPad</h1>
+    <h1>GitHub Pages PDF Viewer</h1>
+    <p>Click on a PDF file to view it below:</p>
     <ul id="file-list">Loading...</ul>
+    <div id="pdf-container">
+        <iframe id="pdf-viewer" src="" width="100%" height="100%" style="border: none;"></iframe>
+    </div>
 
     <script>
-        const repoOwner = "itsplawan";
-        const repoName = "ACCA";
+        const repoOwner = "itsplawan"; // Replace with your GitHub username
+        const repoName = "ACCA"; // Replace with your repository name
+        const baseURL = `https://${repoOwner}.github.io/${repoName}/`; // GitHub Pages base URL
 
         async function fetchRepoContents() {
             const apiUrl = `https://api.github.com/repos/${repoOwner}/${repoName}/contents/`;
@@ -41,19 +53,34 @@
             fileList.innerHTML = "";
 
             data.forEach(item => {
-                const listItem = document.createElement("li");
-                const link = document.createElement("a");
-
-                link.href = item.html_url;
-                link.textContent = item.name;
-
-                if (item.name.endsWith(".pdf")) {
-                    link.target = "_blank";
+                // Skip index.html
+                if (item.name === "index.html") {
+                    return;
                 }
 
-                listItem.appendChild(link);
-                fileList.appendChild(listItem);
+                if (item.name.endsWith(".pdf")) {
+                    const listItem = document.createElement("li");
+                    const link = document.createElement("a");
+
+                    // Construct GitHub Pages URL for each file
+                    const fileURL = `${baseURL}${item.name}`;
+
+                    link.href = "#";
+                    link.textContent = item.name;
+                    link.addEventListener("click", function (event) {
+                        event.preventDefault();
+                        loadPDF(fileURL);
+                    });
+
+                    listItem.appendChild(link);
+                    fileList.appendChild(listItem);
+                }
             });
+        }
+
+        function loadPDF(url) {
+            const viewerUrl = `web/viewer.html?file=${encodeURIComponent(url)}`;
+            document.getElementById("pdf-viewer").src = viewerUrl;
         }
 
         fetchRepoContents();
